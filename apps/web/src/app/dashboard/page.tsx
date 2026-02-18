@@ -1,12 +1,12 @@
-"use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import {
     Sparkles, Clock, Layout, Palette, Key, Settings,
-    Download, Image, ChevronDown, Loader2
+    Download, Image, ChevronDown, Loader2, LogOut, User
 } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { useRouter } from "next/navigation"
 
 const navItems = [
     { icon: Sparkles, label: "Create", tab: "create" },
@@ -39,6 +39,37 @@ export default function Dashboard() {
     const [rendered, setRendered] = useState(false)
     const [title, setTitle] = useState("AI just changed everything")
     const [template, setTemplate] = useState("social-post")
+    const [user, setUser] = useState<any>(null)
+    const [authLoading, setAuthLoading] = useState(true)
+    const router = useRouter()
+
+    useEffect(() => {
+        const checkUser = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) {
+                router.replace("/login")
+            } else {
+                setUser(session.user)
+                setAuthLoading(false)
+            }
+        }
+        checkUser()
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (!session) {
+                router.replace("/login")
+            } else {
+                setUser(session.user)
+            }
+        })
+
+        return () => subscription.unsubscribe()
+    }, [router])
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut()
+        router.replace("/login")
+    }
 
     const handleRender = () => {
         setLoading(true)
@@ -47,6 +78,14 @@ export default function Dashboard() {
             setLoading(false)
             setRendered(true)
         }, 2500)
+    }
+
+    if (authLoading) {
+        return (
+            <div className="h-screen bg-black flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-[#2997FF] animate-spin" />
+            </div>
+        )
     }
 
     return (
@@ -65,8 +104,8 @@ export default function Dashboard() {
                             key={item.tab}
                             onClick={() => setActiveTab(item.tab)}
                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors duration-150 ${activeTab === item.tab
-                                    ? "bg-white/[0.08] text-white"
-                                    : "text-[#86868B] hover:text-white hover:bg-white/[0.04]"
+                                ? "bg-white/[0.08] text-white"
+                                : "text-[#86868B] hover:text-white hover:bg-white/[0.04]"
                                 }`}
                         >
                             <item.icon className="w-4 h-4" strokeWidth={1.5} />
@@ -87,6 +126,20 @@ export default function Dashboard() {
                         <Link href="#" className="block mt-3 text-[12px] text-[#2997FF] font-medium hover:text-[#2997FF]/80 transition-colors">
                             Upgrade to Pro →
                         </Link>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-white/[0.06] flex flex-col gap-1">
+                        <div className="flex items-center gap-3 px-3 py-2 text-[12px] text-[#A1A1AA]">
+                            <User className="w-3.5 h-3.5" />
+                            <span className="truncate">{user?.email}</span>
+                        </div>
+                        <button
+                            onClick={handleSignOut}
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-[#FF375F] hover:bg-[#FF375F]/10 transition-colors duration-150"
+                        >
+                            <LogOut className="w-4 h-4" strokeWidth={1.5} />
+                            Sign Out
+                        </button>
                     </div>
                 </div>
             </aside>
@@ -279,8 +332,8 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                     <span className={`text-[12px] font-medium px-2 py-0.5 rounded-md ${item.status === "completed"
-                                            ? "text-[#32D74B] bg-[#32D74B]/10"
-                                            : "text-[#FF9F0A] bg-[#FF9F0A]/10"
+                                        ? "text-[#32D74B] bg-[#32D74B]/10"
+                                        : "text-[#FF9F0A] bg-[#FF9F0A]/10"
                                         }`}>
                                         {item.status}
                                     </span>

@@ -105,8 +105,8 @@ export default function LandingPage() {
                         ))}
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="text-[13px] text-[#A1A1AA] hover:text-white transition-colors duration-200 hidden sm:block">Sign in</Link>
-                        <Link href="/dashboard" className="text-[13px] font-medium text-white bg-[#2997FF] hover:bg-[#2997FF]/90 px-4 py-1.5 rounded-full transition-all duration-200">
+                        <Link href="/login" className="text-[13px] text-[#A1A1AA] hover:text-white transition-colors duration-200 hidden sm:block">Sign in</Link>
+                        <Link href="/login" className="text-[13px] font-medium text-white bg-[#2997FF] hover:bg-[#2997FF]/90 px-4 py-1.5 rounded-full transition-all duration-200">
                             Get Started
                         </Link>
                     </div>
@@ -148,8 +148,8 @@ export default function LandingPage() {
                         transition={{ duration: 0.5, delay: 0.24 }}
                         className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
                     >
-                        <Link href="/dashboard" className="inline-flex items-center gap-2 bg-white text-black px-7 py-3 rounded-full text-[15px] font-medium hover:bg-white/90 transition-all duration-200">
-                            Start Building <ArrowRight className="w-4 h-4" />
+                        <Link href="/login" className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-[15px] font-medium hover:bg-white/90 transition-all duration-200 group">
+                            Get Started Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                         <Link href="#how-it-works" className="inline-flex items-center gap-2 text-[#A1A1AA] hover:text-white px-7 py-3 rounded-full text-[15px] font-medium transition-colors duration-200">
                             <Play className="w-4 h-4" /> See How It Works
@@ -434,7 +434,7 @@ export default function LandingPage() {
                                     ))}
                                 </ul>
                                 <Link
-                                    href={plan.name === "Enterprise" ? "mailto:hello@agentcanvas.io" : "/dashboard"}
+                                    href={plan.name === "Enterprise" ? "mailto:hello@agentcanvas.io" : "/login"}
                                     className={`block text-center py-2.5 mt-6 rounded-full text-[13px] font-medium transition-all duration-200 ${plan.highlight
                                         ? "bg-[#2997FF] text-white hover:bg-[#2997FF]/90"
                                         : "border border-white/[0.12] text-white hover:border-white/25"
@@ -538,7 +538,7 @@ export default function LandingPage() {
                         50 free renders. No credit card. Deploy in 5 minutes.
                     </p>
                     <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link href="/dashboard" className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-[15px] font-medium hover:bg-white/90 transition-all duration-200">
+                        <Link href="/login" className="inline-flex items-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-[15px] font-medium hover:bg-white/90 transition-all duration-200">
                             Start Building Free <ArrowRight className="w-4 h-4" />
                         </Link>
                         <Link href="mailto:hello@agentcanvas.io" className="text-[15px] text-[#A1A1AA] hover:text-white font-medium transition-colors duration-200">

@@ -3,6 +3,7 @@ import IORedis from 'ioredis';
 import { renderSocialPost } from './renderer';
 
 import { generatePostContent, generatePostImage } from '../core/ai';
+import { uploadFile } from '../core/storage';
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
@@ -42,8 +43,23 @@ export const startWorker = () => {
             await job.updateProgress(60);
         }
 
-        await renderSocialPost(finalData, `job-${job.id}`, format);
+        const localFilePath = await renderSocialPost(finalData, `job-${job.id}`, format);
+
+        // Storage Upload Flow
+        let finalUrl = `/outputs/job-${job.id}.${format}`;
+
+        if (process.env.AWS_ACCESS_KEY_ID && process.env.S3_BUCKET_NAME) {
+            console.log(`☁️ Uploading result to cloud storage...`);
+            await job.updateProgress(90);
+            try {
+                finalUrl = await uploadFile(localFilePath, process.env.S3_BUCKET_NAME);
+            } catch (err) {
+                console.error('Failed to upload to S3, falling back to local URL', err);
+            }
+        }
+
         await job.updateProgress(100);
+        return { url: finalUrl };
 
     }, {
         connection: new IORedis(redisUrl, { maxRetriesPerRequest: null }) as any

@@ -10,6 +10,7 @@
     "clean": "rm -rf dist public/outputs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.992.0",
     "@fastify/cors": "^10.0.1",
     "@remotion/bundler": "4.0.264",
     "@remotion/renderer": "4.0.264",

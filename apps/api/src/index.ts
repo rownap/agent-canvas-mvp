@@ -125,7 +125,7 @@ fastify.get('/v1/jobs/:jobId', async (request, reply) => {
         id: job.id,
         state,
         progress,
-        outputUrl: state === 'completed' ? `/outputs/${job.id}.${job.data.format}` : null,
+        outputUrl: state === 'completed' ? job.returnvalue?.url : null,
         error: state === 'failed' ? job.failedReason : null
     });
 });

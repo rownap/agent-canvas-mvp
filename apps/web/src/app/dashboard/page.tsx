@@ -3,8 +3,10 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import {
     Sparkles, Clock, Layout, Palette, Key, Settings,
-    Download, Image, ChevronDown, Loader2, LogOut, User
+    Download, Image, ChevronDown, Loader2, LogOut, User,
+    CreditCard
 } from "lucide-react"
+import { Billing } from "@/components/Billing"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 
@@ -12,6 +14,7 @@ const navItems = [
     { icon: Sparkles, label: "Create", tab: "create" },
     { icon: Clock, label: "History", tab: "history" },
     { icon: Layout, label: "Templates", tab: "templates" },
+    { icon: CreditCard, label: "Billing", tab: "billing" },
     { icon: Palette, label: "Brand Kit", tab: "brand" },
     { icon: Key, label: "API Keys", tab: "api" },
     { icon: Settings, label: "Settings", tab: "settings" },
@@ -436,9 +439,18 @@ export default function Dashboard() {
                         )
                     }
 
+                    {/* Billing */}
+                    {
+                        activeTab === "billing" && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <Billing user={user} />
+                            </motion.div>
+                        )
+                    }
+
                     {/* Placeholder */}
                     {
-                        !["create", "history", "templates"].includes(activeTab) && (
+                        !["create", "history", "templates", "billing"].includes(activeTab) && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#1D1D1F] rounded-2xl border border-white/[0.06] p-16 text-center">
                                 <Settings className="w-8 h-8 text-[#86868B]/40 mx-auto mb-4" strokeWidth={1.5} />
                                 <h2 className="text-[17px] font-semibold text-white mb-2">Coming Soon</h2>

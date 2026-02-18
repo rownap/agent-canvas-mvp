@@ -2,6 +2,8 @@ import { Queue, Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { renderSocialPost } from './renderer';
 
+import { generatePostContent, generatePostImage } from '../core/ai';
+
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
 export const renderQueue = new Queue('render-queue', {
@@ -13,12 +15,35 @@ export const startWorker = () => {
         console.log(`Processing job ${job.id}...`);
         const { templateId, data, format } = job.data;
 
-        // For MVP, we only support SocialPost
         if (templateId !== 'SocialPost') {
             throw new Error('Template not supported');
         }
 
-        await renderSocialPost(data, `job-${job.id}`, format);
+        // AI Generation Flow
+        const finalData = { ...data };
+
+        if (data.topic && (!data.title || !data.image)) {
+            console.log(`✨ AI Generation started for topic: ${data.topic}`);
+            await job.updateProgress(10);
+
+            // 1. Generate Copy
+            const aiContent = await generatePostContent(data.topic);
+            console.log(`📝 AI Copy generated: ${aiContent.title}`);
+
+            if (!data.title) finalData.title = aiContent.title;
+            if (!data.subtitle) finalData.subtitle = aiContent.subtitle;
+            await job.updateProgress(30);
+
+            // 2. Generate Image
+            const aiImageUrl = await generatePostImage(aiContent.imagePrompt);
+            console.log(`🖼️ AI Image generated: ${aiImageUrl}`);
+
+            if (!data.image) finalData.image = aiImageUrl;
+            await job.updateProgress(60);
+        }
+
+        await renderSocialPost(finalData, `job-${job.id}`, format);
+        await job.updateProgress(100);
 
     }, {
         connection: new IORedis(redisUrl, { maxRetriesPerRequest: null }) as any

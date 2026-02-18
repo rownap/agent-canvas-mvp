@@ -18,7 +18,8 @@ export const brandKitSchema = z.object({
 });
 
 export const socialPostSchema = z.object({
-    title: z.string(),
+    topic: z.string().optional(),
+    title: z.string().optional(),
     subtitle: z.string().optional(),
     image: z.string().url().optional(),
     content: z.string().optional(),

@@ -42,7 +42,8 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("create")
     const [loading, setLoading] = useState(false)
     const [rendered, setRendered] = useState(false)
-    const [title, setTitle] = useState("AI just changed everything")
+    const [topic, setTopic] = useState("")
+    const [title, setTitle] = useState("Exploring the Future")
     const [template, setTemplate] = useState("social-post")
     const [user, setUser] = useState<any>(null)
     const [authLoading, setAuthLoading] = useState(true)
@@ -93,7 +94,8 @@ export default function Dashboard() {
                 body: JSON.stringify({
                     templateId: "SocialPost",
                     data: {
-                        title,
+                        topic: topic || undefined,
+                        title: topic ? undefined : title,
                         brandKit: {
                             colors: {
                                 primary: "#2997FF",
@@ -115,8 +117,8 @@ export default function Dashboard() {
 
             setJobId(result.jobId)
             pollJobStatus(result.jobId)
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "An unknown error occurred")
             setLoading(false)
         }
     }
@@ -138,8 +140,10 @@ export default function Dashboard() {
                     setError(data.error || "Render failed")
                     setLoading(false)
                 }
-            } catch (err) {
+            } catch (err: unknown) {
                 console.error("Polling error:", err)
+                // Optionally set error state here as well if needed for UI
+                // setError(err instanceof Error ? err.message : "An unknown polling error occurred");
             }
         }, 2000)
     }
@@ -289,22 +293,40 @@ export default function Dashboard() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[13px] font-medium text-[#F5F5F7]/80 mb-2">Title</label>
+                                        <label className="block text-[13px] font-medium text-[#2997FF] mb-2 flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4" />
+                                            AI Topic / Dream
+                                        </label>
                                         <input
                                             type="text"
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2.5 text-[14px] text-white placeholder-[#86868B]/50 focus:outline-none focus:ring-2 focus:ring-[#2997FF]/40 focus:border-[#2997FF]/40 transition-all"
-                                            placeholder="Your headline..."
+                                            value={topic}
+                                            onChange={(e) => setTopic(e.target.value)}
+                                            className="w-full bg-black/40 border border-[#2997FF]/20 rounded-lg px-3 py-2.5 text-[14px] text-white placeholder-[#86868B]/50 focus:outline-none focus:ring-2 focus:ring-[#2997FF]/40 focus:border-[#2997FF]/40 transition-all font-medium"
+                                            placeholder="A futuristic coffee shop in Mars..."
                                         />
+                                        <p className="text-[11px] text-[#86868B] mt-1.5 px-1">Leave empty to use manual Title below.</p>
                                     </div>
+
+                                    {!topic && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+                                            <label className="block text-[13px] font-medium text-[#F5F5F7]/80 mb-2">Title</label>
+                                            <input
+                                                type="text"
+                                                value={title}
+                                                onChange={(e) => setTitle(e.target.value)}
+                                                className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2.5 text-[14px] text-white placeholder-[#86868B]/50 focus:outline-none focus:ring-2 focus:ring-[#2997FF]/40 focus:border-[#2997FF]/40 transition-all"
+                                                placeholder="Enter title"
+                                            />
+                                        </motion.div>
+                                    )}
 
                                     <div>
                                         <label className="block text-[13px] font-medium text-[#F5F5F7]/80 mb-2">Background Image</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2.5 text-[14px] text-white placeholder-[#86868B]/50 focus:outline-none focus:ring-2 focus:ring-[#2997FF]/40 focus:border-[#2997FF]/40 transition-all"
-                                            placeholder="https://..."
+                                            disabled={!!topic}
+                                            className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2.5 text-[14px] text-white placeholder-[#86868B]/50 focus:outline-none focus:ring-2 focus:ring-[#2997FF]/40 focus:border-[#2997FF]/40 transition-all disabled:opacity-30"
+                                            placeholder={topic ? "Auto-generated by AI" : "https://..."}
                                         />
                                     </div>
 

@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = process.env.OPENAI_API_KEY || ""; // We discovered this holds the AIzaSy... Google key
+const apiKey = process.env.GOOGLE_AI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export const generatePostContentGemini = async (topic: string) => {

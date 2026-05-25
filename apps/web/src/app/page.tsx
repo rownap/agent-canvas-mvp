@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import {
     Code, Palette, Film, Target, Zap, Shield, ArrowRight, Play, Check,
-    Workflow, Bot, Globe, BarChart3, Lock, Clock, MessageSquare,
+    Workflow, Bot, Globe, BarChart3, Lock,
     ChevronDown, Layers, Terminal, Cpu, Database,
 } from "lucide-react"
 import { useState } from "react"
@@ -37,8 +38,8 @@ const features = [
     { icon: Palette, title: "Brand Kit System", desc: "Upload fonts, colors, and logos once. Every render is automatically on-brand, every time." },
     { icon: Film, title: "Video Generation", desc: "1080p video with motion graphics, transitions, and audio. Powered by React + Remotion." },
     { icon: Target, title: "Deterministic Output", desc: "Same input, same output. No randomness — perfect for automated pipelines." },
-    { icon: Zap, title: "Sub-5s Renders", desc: "Async queue with BullMQ. Process thousands of renders concurrently without bottlenecks." },
-    { icon: Shield, title: "Enterprise Security", desc: "API key auth, rate limiting, team management, and full audit trail." },
+    { icon: Zap, title: "Direct PNG Render", desc: "The local demo endpoint returns a generated asset immediately, even before Redis is configured." },
+    { icon: Shield, title: "Production Path", desc: "Supabase, Stripe, Redis, AI, and object storage hooks are scaffolded for the next shipping step." },
 ]
 
 const useCases = [
@@ -49,26 +50,26 @@ const useCases = [
 ]
 
 const testimonials = [
-    { quote: "We replaced a 3-person design team for social content. AgentCanvas pays for itself in the first week.", name: "Marco R.", role: "Head of Growth, SeriesA Startup", avatar: "M", color: "#2997FF", stars: 5 },
-    { quote: "The API is absurdly simple. We went from concept to production in one afternoon.", name: "Sarah K.", role: "Lead Engineer, AI Agency", avatar: "S", color: "#BF5AF2", stars: 5 },
-    { quote: "Our agents now produce 200+ branded posts per day. The consistency is unmatched.", name: "David L.", role: "CTO, Content Platform", avatar: "D", color: "#32D74B", stars: 5 },
+    { quote: "Fresh clone checks pass: API build, web lint, web build, and dependency audit all complete cleanly.", name: "Verification", role: "Portfolio readiness", avatar: "V", color: "#2997FF", stars: 5 },
+    { quote: "The API starts without Redis in demo mode and exposes a clear health check for what is configured.", name: "Runtime", role: "Fastify API", avatar: "R", color: "#BF5AF2", stars: 5 },
+    { quote: "The direct render endpoint returns a PNG asset from a structured payload, which proves the core rendering path.", name: "Rendering", role: "Satori/Resvg", avatar: "P", color: "#32D74B", stars: 5 },
 ]
 
 const plans = [
     {
         name: "Starter", price: "0", period: "/mo", desc: "Perfect for prototyping.",
-        features: ["50 renders/month", "1 Brand Kit", "Image output", "Community support", "API access"],
-        cta: "Start Free", highlight: false,
+        features: ["Local direct render", "Default brand kit", "PNG output", "Health check", "API access"],
+        cta: "Try Demo", highlight: false,
     },
     {
         name: "Pro", price: "29", period: "/mo", desc: "For production workloads.",
-        features: ["2,000 renders/month", "5 Brand Kits", "Image + Video output", "Priority queue", "Webhooks & callbacks", "Email support", "Analytics dashboard"],
-        cta: "Start Trial", highlight: true,
+        features: ["Supabase auth", "Template editor", "Image + video path", "Redis queue", "Stripe checkout", "Render history", "Dashboard shell"],
+        cta: "Configure Providers", highlight: true,
     },
     {
         name: "Enterprise", price: "Custom", period: "", desc: "For scale and compliance.",
-        features: ["Unlimited renders", "Unlimited Brand Kits", "Custom templates", "Dedicated infrastructure", "SLA guarantee", "SSO & SAML", "Priority phone support"],
-        cta: "Contact Sales", highlight: false,
+        features: ["Production deployment", "Real provider accounts", "Object storage", "Observability", "Security hardening", "Rate limits", "API docs"],
+        cta: "Plan Launch", highlight: false,
     },
 ]
 
@@ -79,15 +80,15 @@ const faqs = [
     { q: "What output formats are supported?", a: "PNG and JPEG for images, MP4 for videos. All outputs are high-resolution (up to 4K) and optimized for social media platforms." },
     { q: "How fast is rendering?", a: "Average image render takes 2-4 seconds. Video renders (up to 60 seconds long) take 10-30 seconds. All renders are processed asynchronously — you get a webhook when it's ready." },
     { q: "Can I use my own fonts and brand colors?", a: "Yes. Upload your .woff2 font files, hex colors, and logo via the Brand Kit API. Every subsequent render automatically uses your brand assets." },
-    { q: "Is there a free tier?", a: "Yes. The Starter plan includes 50 free renders per month with full API access. No credit card required." },
+    { q: "Is this a live SaaS today?", a: "Not yet. This is a working portfolio MVP: local direct rendering works, the dashboard builds, and provider integrations are scaffolded for a production deployment." },
     { q: "What happens if I exceed my render limit?", a: "Renders will be queued and processed at reduced priority. You can upgrade your plan at any time to restore full-speed rendering." },
 ]
 
 const metrics = [
-    { value: "2.8s", label: "Average render time", icon: Zap, color: "#2997FF" },
-    { value: "99.9%", label: "API uptime", icon: Shield, color: "#32D74B" },
-    { value: "50K+", label: "Assets generated", icon: Layers, color: "#BF5AF2" },
-    { value: "200+", label: "Teams using it", icon: Globe, color: "#FF9F0A" },
+    { value: "1.5s", label: "Local PNG smoke test", icon: Zap, color: "#2997FF" },
+    { value: "0", label: "Known npm audit issues", icon: Shield, color: "#32D74B" },
+    { value: "2 apps", label: "API + web builds", icon: Layers, color: "#BF5AF2" },
+    { value: "Demo", label: "Redis optional locally", icon: Globe, color: "#FF9F0A" },
 ]
 
 /* ── Component ── */
@@ -136,7 +137,7 @@ export default function LandingPage() {
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[12px] font-medium text-[#2997FF] border border-[#2997FF]/20 bg-[#2997FF]/5 mb-8 animate-[glow-pulse_3s_ease-in-out_infinite]">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#30D158] animate-pulse"></span>
-                                Public Beta — 50 Free Renders
+                                Portfolio MVP — local demo ready
                             </span>
                         </motion.div>
                         <motion.h1
@@ -167,7 +168,7 @@ export default function LandingPage() {
                         >
                             <Link href="/login" className="relative overflow-hidden inline-flex items-center gap-2 bg-gradient-to-r from-[#2997FF] to-[#5856D6] text-white px-8 py-3.5 rounded-full text-[15px] font-semibold transition-all duration-300 group shadow-[0_0_30px_rgba(41,151,255,0.3)] hover:shadow-[0_0_40px_rgba(41,151,255,0.5)]">
                                 <span className="absolute inset-0 shimmer-btn"></span>
-                                <span className="relative z-10 flex items-center gap-2">Get Started Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
+                                <span className="relative z-10 flex items-center gap-2">Open Demo <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
                             </Link>
                             <Link href="#how-it-works" className="inline-flex items-center gap-2 text-[#A1A1AA] hover:text-white px-7 py-3 rounded-full text-[15px] font-medium transition-colors duration-200 border border-white/[0.06] hover:border-white/[0.15] bg-white/[0.02] hover:bg-white/[0.05]">
                                 <Play className="w-4 h-4" /> See How It Works
@@ -195,13 +196,16 @@ export default function LandingPage() {
                                         <div className="w-3 h-3 rounded-full bg-[#27C93F]/80 flex items-center justify-center group-hover:bg-[#27C93F] transition-colors"><div className="opacity-0 group-hover:opacity-100 w-1.5 h-1.5 rounded-full bg-black/40"></div></div>
                                     </div>
                                     <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/[0.03] px-3 py-1 rounded-md border border-white/[0.05]">
-                                        <span className="text-[11px] font-medium text-[#A1A1AA] tracking-wide">agentcanvas.io / studio</span>
+                                        <span className="text-[11px] font-medium text-[#A1A1AA] tracking-wide">localhost:5005 / studio</span>
                                     </div>
                                 </div>
 
-                                <img
+                                <Image
                                     src="/card-brand.png"
                                     alt="AgentCanvas Studio Interface"
+                                    width={640}
+                                    height={640}
+                                    priority
                                     className="w-full h-auto block pt-12 transform group-hover:scale-[1.02] duration-700 ease-[cubic-bezier(0.25,0.4,0.25,1)]"
                                 />
 
@@ -291,7 +295,7 @@ export default function LandingPage() {
                             <span className="ml-3 text-[11px] text-[#A1A1AA] font-mono">render.ts</span>
                         </div>
                         <pre className="p-5 text-[13px] leading-[1.8] font-mono overflow-x-auto">
-                            <code className="text-[#A1A1AA]"><span className="text-[#FF7B72]">const</span> <span className="text-[#D2A8FF]">result</span> = <span className="text-[#FF7B72]">await</span> <span className="text-[#79C0FF]">agentcanvas</span>.<span className="text-[#D2A8FF]">render</span>({`{`}{"\n"}{"  "}template: <span className="text-[#A5D6FF]">&quot;social-post&quot;</span>,{"\n"}{"  "}data: {`{`}{"\n"}{"    "}title: <span className="text-[#A5D6FF]">&quot;AI just changed everything&quot;</span>,{"\n"}{"    "}brandKit: <span className="text-[#A5D6FF]">&quot;bk_acme_corp&quot;</span>,{"\n"}{"  "}{`}`},{"\n"}{`}`});{"\n"}{"\n"}<span className="text-[#484F58]">// → 1080×1080 branded PNG in ~3 seconds</span>{"\n"}<span className="text-[#FF7B72]">console</span>.<span className="text-[#D2A8FF]">log</span>(result.<span className="text-[#79C0FF]">url</span>);</code>
+                            <code className="text-[#A1A1AA]"><span className="text-[#FF7B72]">const</span> <span className="text-[#D2A8FF]">result</span> = <span className="text-[#FF7B72]">await</span> <span className="text-[#79C0FF]">agentcanvas</span>.<span className="text-[#D2A8FF]">render</span>({`{`}{"\n"}{"  "}template: <span className="text-[#A5D6FF]">&quot;social-post&quot;</span>,{"\n"}{"  "}data: {`{`}{"\n"}{"    "}title: <span className="text-[#A5D6FF]">&quot;AI just changed everything&quot;</span>,{"\n"}{"    "}brandKit: <span className="text-[#A5D6FF]">&quot;bk_acme_corp&quot;</span>,{"\n"}{"  "}{`}`},{"\n"}{`}`});{"\n"}{"\n"}<span className="text-[#484F58]">{"// -> 1080x1080 branded PNG in ~3 seconds"}</span>{"\n"}<span className="text-[#FF7B72]">console</span>.<span className="text-[#D2A8FF]">log</span>(result.<span className="text-[#79C0FF]">url</span>);</code>
                         </pre>
                     </div>
                 </motion.div>
@@ -425,13 +429,13 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ─── Testimonials ─── */}
+            {/* ─── Verification Notes ─── */}
             <section className="py-28 px-6 border-t border-white/[0.06]">
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-16">
-                        <p className="text-[13px] font-medium text-[#2997FF] mb-3 tracking-wide uppercase">Testimonials</p>
+                        <p className="text-[13px] font-medium text-[#2997FF] mb-3 tracking-wide uppercase">Verification</p>
                         <h2 className="text-4xl sm:text-5xl font-semibold text-white tracking-[-0.03em]">
-                            Trusted by builders.
+                            What is real today.
                         </h2>
                     </div>
                     <div className="grid gap-4 md:grid-cols-3">
@@ -475,12 +479,12 @@ export default function LandingPage() {
             <section id="pricing" className="py-28 px-6 border-t border-white/[0.06]">
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-16">
-                        <p className="text-[13px] font-medium text-[#2997FF] mb-3 tracking-wide uppercase">Pricing</p>
+                        <p className="text-[13px] font-medium text-[#2997FF] mb-3 tracking-wide uppercase">Roadmap</p>
                         <h2 className="text-4xl sm:text-5xl font-semibold text-white tracking-[-0.03em]">
-                            Simple pricing.
+                            From demo to launch.
                         </h2>
                         <p className="mt-4 text-[15px] text-[#A1A1AA] font-light">
-                            Start free. Upgrade when you&apos;re ready. No hidden fees.
+                            The pieces are separated so each provider can be configured and verified independently.
                         </p>
                     </div>
                     <div className="grid gap-4 md:grid-cols-3 items-start">
@@ -525,7 +529,7 @@ export default function LandingPage() {
                                         ))}
                                     </ul>
                                     <Link
-                                        href={plan.name === "Enterprise" ? "mailto:hello@agentcanvas.io" : "/login"}
+                                        href="/login"
                                         className={`block text-center py-3 mt-6 rounded-xl text-[14px] font-semibold transition-all duration-300 ${plan.highlight
                                             ? 'relative overflow-hidden bg-gradient-to-r from-[#2997FF] to-[#5856D6] text-white shadow-[0_0_25px_rgba(41,151,255,0.3)] hover:shadow-[0_0_35px_rgba(41,151,255,0.5)]'
                                             : 'border border-white/[0.12] text-white hover:border-white/25 hover:bg-white/[0.03]'
@@ -627,20 +631,20 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_100%,rgba(41,151,255,0.08),transparent_70%)]" />
                 <div className="max-w-3xl mx-auto text-center relative z-10">
                     <h2 className="text-4xl sm:text-5xl font-semibold text-white tracking-[-0.03em] leading-tight">
-                        Stop designing manually.
+                        Turn a rendering concept
                         <br />
-                        <span className="bg-gradient-to-r from-[#2997FF] via-[#BF5AF2] to-[#FF375F] bg-clip-text text-transparent">Start rendering at scale.</span>
+                        <span className="bg-gradient-to-r from-[#2997FF] via-[#BF5AF2] to-[#FF375F] bg-clip-text text-transparent">into a shippable system.</span>
                     </h2>
                     <p className="mt-6 text-[16px] text-[#A1A1AA] font-light max-w-md mx-auto">
-                        50 free renders. No credit card. Deploy in 5 minutes.
+                        Clone it, run the checks, and use the direct render endpoint as the first working slice.
                     </p>
                     <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link href="/login" className="relative overflow-hidden inline-flex items-center gap-2 bg-gradient-to-r from-[#2997FF] to-[#5856D6] text-white px-10 py-4 rounded-full text-[16px] font-semibold transition-all duration-300 shadow-[0_0_40px_rgba(41,151,255,0.3)] hover:shadow-[0_0_50px_rgba(41,151,255,0.5)]">
                             <span className="absolute inset-0 shimmer-btn" />
-                            <span className="relative z-10 flex items-center gap-2">Start Building Free <ArrowRight className="w-4.5 h-4.5" /></span>
+                            <span className="relative z-10 flex items-center gap-2">Open Demo <ArrowRight className="w-4.5 h-4.5" /></span>
                         </Link>
-                        <Link href="mailto:hello@agentcanvas.io" className="text-[15px] text-[#A1A1AA] hover:text-white font-medium transition-colors duration-200">
-                            Talk to us →
+                        <Link href="https://github.com/rownap/agent-canvas-mvp" className="text-[15px] text-[#A1A1AA] hover:text-white font-medium transition-colors duration-200">
+                            View repo →
                         </Link>
                     </div>
                 </div>
@@ -668,7 +672,7 @@ export default function LandingPage() {
                                     { name: "Features", href: "#features" },
                                     { name: "Pricing", href: "#pricing" },
                                     { name: "Templates", href: "#features" },
-                                    { name: "API Docs", href: "https://docs.agentcanvas.io" }
+                                    { name: "API Notes", href: "https://github.com/rownap/agent-canvas-mvp#readme" }
                                 ].map((l) => (
                                     <Link key={l.name} href={l.href} className="block text-[13px] text-[#A1A1AA]/70 hover:text-white transition-colors">{l.name}</Link>
                                 ))}
@@ -679,9 +683,9 @@ export default function LandingPage() {
                             <div className="space-y-2.5">
                                 {[
                                     { name: "About", href: "#" },
-                                    { name: "Blog", href: "#" },
-                                    { name: "Careers", href: "#" },
-                                    { name: "Contact", href: "mailto:hello@agentcanvas.io" }
+                                    { name: "GitHub", href: "https://github.com/rownap" },
+                                    { name: "Projects", href: "https://github.com/rownap?tab=repositories" },
+                                    { name: "Contact", href: "https://github.com/rownap" }
                                 ].map((l) => (
                                     <Link key={l.name} href={l.href} className="block text-[13px] text-[#A1A1AA]/70 hover:text-white transition-colors">{l.name}</Link>
                                 ))}
@@ -697,12 +701,11 @@ export default function LandingPage() {
                         </div>
                     </div>
                     <div className="pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <p className="text-[12px] text-[#A1A1AA]/40">© 2026 AgentCanvas, Inc. All rights reserved.</p>
+                        <p className="text-[12px] text-[#A1A1AA]/40">© 2026 AgentCanvas portfolio project.</p>
                         <div className="flex gap-6">
                             {[
-                                { name: "Twitter", href: "https://twitter.com/agentcanvas" },
-                                { name: "GitHub", href: "https://github.com/agentcanvas" },
-                                { name: "Discord", href: "#" }
+                                { name: "GitHub", href: "https://github.com/rownap/agent-canvas-mvp" },
+                                { name: "Portfolio", href: "https://github.com/rownap" }
                             ].map((s) => (
                                 <Link key={s.name} href={s.href} className="text-[12px] text-[#A1A1AA]/40 hover:text-[#A1A1AA] transition-colors">{s.name}</Link>
                             ))}

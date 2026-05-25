@@ -5,7 +5,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { z } from 'zod';
 import { socialPostSchema } from './core/schemas';
-import { renderQueue, startWorker } from './worker/queue';
+import { getRenderQueue, startWorker } from './worker/queue';
 import { stripe, createCheckoutSession } from './core/stripe';
 import { supabase } from './core/supabase';
 
@@ -29,6 +29,13 @@ fastify.addContentTypeParser('application/json', { parseAs: 'string' }, function
 fastify.register(cors, {
     origin: '*',
 });
+
+fastify.get('/health', async () => ({
+    ok: true,
+    redisConfigured: Boolean(process.env.REDIS_URL),
+    asyncRenderAvailable: Boolean(process.env.REDIS_URL),
+    directRenderAvailable: true
+}));
 
 const renderPayloadSchema = z.object({
     templateId: z.string(),
@@ -286,7 +293,7 @@ fastify.post('/v1/render', async (request, reply) => {
         }
 
         // Add job to BullMQ
-        const job = await renderQueue.add('render-job', { ...body, renderId });
+        const job = await getRenderQueue().add('render-job', { ...body, renderId });
 
         reply.status(202).send({
             jobId: job.id,
@@ -296,6 +303,8 @@ fastify.post('/v1/render', async (request, reply) => {
     } catch (error) {
         if (error instanceof z.ZodError) {
             reply.status(400).send({ error: 'Validation Error', details: error.errors });
+        } else if (error instanceof Error && error.message.includes('REDIS_URL')) {
+            reply.status(503).send({ error: 'Async render queue is not configured. Set REDIS_URL or use /v1/render-direct.' });
         } else {
             reply.status(500).send({ error: 'Internal Server Error' });
         }
@@ -303,23 +312,31 @@ fastify.post('/v1/render', async (request, reply) => {
 });
 
 fastify.get('/v1/jobs/:jobId', async (request, reply) => {
-    const { jobId } = request.params as { jobId: string };
-    const job = await renderQueue.getJob(jobId);
+    try {
+        const { jobId } = request.params as { jobId: string };
+        const job = await getRenderQueue().getJob(jobId);
 
-    if (!job) {
-        return reply.status(404).send({ error: 'Job not found' });
+        if (!job) {
+            return reply.status(404).send({ error: 'Job not found' });
+        }
+
+        const state = await job.getState();
+        const progress = job.progress;
+
+        reply.send({
+            id: job.id,
+            state,
+            progress,
+            outputUrl: state === 'completed' ? job.returnvalue?.url : null,
+            error: state === 'failed' ? job.failedReason : null
+        });
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('REDIS_URL')) {
+            reply.status(503).send({ error: 'Async render queue is not configured. Set REDIS_URL or use /v1/render-direct.' });
+        } else {
+            reply.status(500).send({ error: 'Internal Server Error' });
+        }
     }
-
-    const state = await job.getState();
-    const progress = job.progress;
-
-    reply.send({
-        id: job.id,
-        state,
-        progress,
-        outputUrl: state === 'completed' ? job.returnvalue?.url : null,
-        error: state === 'failed' ? job.failedReason : null
-    });
 });
 
 const start = async () => {

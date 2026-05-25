@@ -4,12 +4,13 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-    Sparkles, Clock, Layout, Palette, Key, Settings,
-    Download, Image as ImageIcon, ChevronDown, Loader2, LogOut, User,
+    Sparkles, Clock, Layout,
+    Download, Image as ImageIcon, Loader2, LogOut,
     CreditCard, Zap, Layers, BarChart3
 } from "lucide-react"
 import { Billing } from "@/components/Billing"
 import { supabase } from "@/lib/supabase"
+import type { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
 import { VisualEditor, TemplateElement } from "@/components/VisualEditor"
 
@@ -20,7 +21,24 @@ const navItems = [
     { icon: CreditCard, label: "Billing", tab: "billing" },
 ]
 
-interface DashboardProps { }
+type ApiTemplate = {
+    id: string
+    format?: string
+    name?: string
+    size?: string
+    color?: string
+    isDefault?: boolean
+    markup?: string
+}
+
+type RenderHistoryItem = {
+    id: string
+    title?: string
+    template_id?: string
+    output_url?: string
+    status?: string
+    created_at?: string
+}
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("create")
@@ -30,26 +48,27 @@ export default function Dashboard() {
     const [title, setTitle] = useState("Exploring the Future")
     const [template, setTemplate] = useState("SocialPost")
     const [dynamicValues, setDynamicValues] = useState<Record<string, string>>({})
-    const [apiTemplates, setApiTemplates] = useState<any[]>([])
+    const [apiTemplates, setApiTemplates] = useState<ApiTemplate[]>([])
 
     const [isCreatingTemplate, setIsCreatingTemplate] = useState(false)
-    const [user, setUser] = useState<any>(null)
+    const [user, setUser] = useState<User | null>(null)
     const [authLoading, setAuthLoading] = useState(true)
-    const [credits, setCredits] = useState<number>(50) // Default for safety
-    const [historyItems, setHistoryItems] = useState<any[]>([])
+    const [credits, setCredits] = useState<number>(50)
+    const [historyItems, setHistoryItems] = useState<RenderHistoryItem[]>([])
 
     const selectedTemplateObj = apiTemplates.find(t => t.id === template);
     let dynamicVars: string[] = [];
     if (selectedTemplateObj && selectedTemplateObj.id !== 'SocialPost' && selectedTemplateObj.markup) {
         try {
-            const elements = JSON.parse(selectedTemplateObj.markup);
-            const vars = elements.filter((el: any) => el.type === 'text' && el.isVariable && el.variableName).map((el: any) => el.variableName);
+            const elements = JSON.parse(selectedTemplateObj.markup) as TemplateElement[];
+            const vars = elements.filter((el) => el.type === 'text' && el.isVariable && el.variableName).map((el) => el.variableName as string);
             dynamicVars = Array.from(new Set(vars)) as string[];
-        } catch (e) { }
+        } catch {
+            dynamicVars = [];
+        }
     }
 
     const [outputUrl, setOutputUrl] = useState<string | null>(null)
-    const [jobId, setJobId] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
 
@@ -102,6 +121,10 @@ export default function Dashboard() {
 
     const handleCreateTemplate = async (name: string, elements: TemplateElement[]) => {
         if (!name || !elements.length) return;
+        if (!user) {
+            setError("Please sign in before creating templates");
+            return;
+        }
         setLoading(true);
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5006";
@@ -121,14 +144,15 @@ export default function Dashboard() {
                 const data = await res.json();
                 setError(data.error || "Failed to create template");
             }
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Failed to create template");
         } finally {
             setLoading(false);
         }
     }
 
     const handleDeleteTemplate = async (id: string) => {
+        if (!user) return;
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5006";
             await fetch(`${apiUrl}/v1/templates/${id}?userId=${user.id}`, { method: "DELETE" });
@@ -605,7 +629,7 @@ export default function Dashboard() {
                                                         <div className="flex items-center gap-3 text-[12px] text-[#A1A1AA]">
                                                             <span className="bg-white/[0.05] px-2 py-0.5 rounded text-white/80">{item.template_id || "Graphic"}</span>
                                                             <span>•</span>
-                                                            <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                                                            <span>{item.created_at ? new Date(item.created_at).toLocaleDateString() : "Just now"}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -652,7 +676,7 @@ export default function Dashboard() {
                             )}
 
                             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                                {apiTemplates.map((tpl, i) => (
+                                {apiTemplates.map((tpl) => (
                                     <motion.div
                                         key={tpl.id}
                                         whileHover={{ y: -5 }}
@@ -690,7 +714,7 @@ export default function Dashboard() {
                     {/* Billing */}
                     {activeTab === "billing" && (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                            <Billing user={user} />
+                            {user && <Billing user={user} />}
                         </motion.div>
                     )}
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Layers, ArrowRight, Loader2, Mail, Lock } from "lucide-react"
+import { Layers, Loader2, Mail, Lock } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"

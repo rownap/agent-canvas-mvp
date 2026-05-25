@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Type, Image as ImageIcon, Crosshair, Plus, Trash2, Save, X } from 'lucide-react'
+import { Type, Image as ImageIcon, Crosshair, Trash2, Save, X } from 'lucide-react'
 
 export type TemplateElement = {
     id: string;

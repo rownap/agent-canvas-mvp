@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard, Check, Sparkles, Loader2, Zap } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
 
 interface BillingProps {
-    user: any;
+    user: User;
 }
 
 const plans = [

@@ -6,13 +6,32 @@ import { generatePostContent, generatePostImage } from '../core/ai';
 import { uploadFile } from '../core/storage';
 import { supabase } from '../core/supabase';
 
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+let renderQueue: Queue | null = null;
 
-export const renderQueue = new Queue('render-queue', {
-    connection: new IORedis(redisUrl, { maxRetriesPerRequest: null }) as any
-});
+const createConnection = () => {
+    if (!process.env.REDIS_URL) {
+        throw new Error('REDIS_URL is required for async render jobs');
+    }
+
+    return new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null }) as any;
+};
+
+export const getRenderQueue = () => {
+    if (!renderQueue) {
+        renderQueue = new Queue('render-queue', {
+            connection: createConnection()
+        });
+    }
+
+    return renderQueue;
+};
 
 export const startWorker = () => {
+    if (!process.env.REDIS_URL) {
+        console.warn('REDIS_URL is not configured; async render worker is disabled. Use /v1/render-direct for local demos.');
+        return null;
+    }
+
     const worker = new Worker('render-queue', async job => {
         console.log(`Processing job ${job.id}...`);
         const { templateId, data, format } = job.data;
@@ -63,7 +82,7 @@ export const startWorker = () => {
         return { url: finalUrl };
 
     }, {
-        connection: new IORedis(redisUrl, { maxRetriesPerRequest: null }) as any
+        connection: createConnection()
     });
 
     worker.on('completed', async (job) => {
@@ -93,4 +112,5 @@ export const startWorker = () => {
     });
 
     console.log('Worker started...');
+    return worker;
 };

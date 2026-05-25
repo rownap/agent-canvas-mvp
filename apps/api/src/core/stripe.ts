@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dev_local';
 
 export const stripe = new Stripe(stripeSecretKey, {
     apiVersion: '2025-01-27' as any, // Cast to any to avoid TS errors if version mismatch

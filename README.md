@@ -4,6 +4,14 @@ API-first media generation infrastructure for autonomous agents.
 
 AgentCanvas turns structured data into branded social images and short videos. It combines a Next.js dashboard, a Fastify rendering API, Satori/Remotion templates, optional Redis/BullMQ jobs, Supabase auth/history, Stripe billing, and AI/provider integrations.
 
+## Portfolio Links
+
+| Link | Status |
+| --- | --- |
+| Public demo | Not deployed yet |
+| Source code | [github.com/rownap/agent-canvas-mvp](https://github.com/rownap/agent-canvas-mvp) |
+| Local verification | Build, lint, audit, API health, direct PNG render |
+
 ## What Works Today
 
 - Branded PNG rendering through `POST /v1/render-direct`.
